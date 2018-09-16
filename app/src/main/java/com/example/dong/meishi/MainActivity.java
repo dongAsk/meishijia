@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null){
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_launcher_background);
+            actionBar.setHomeAsUpIndicator(R.drawable.list);
         }
 
         final RecyclerView recyclerView = findViewById(R.id.recycler_view);

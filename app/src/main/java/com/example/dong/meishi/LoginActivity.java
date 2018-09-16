@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.dong.meishi.httpUtil.HttpUtil;
+import com.example.dong.meishi.httpUtil.ParseJSON;
 
 import java.io.IOException;
 
@@ -67,9 +68,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         boolean isremember = pref.getBoolean("remember_password",false);
         if (isremember){
-            String account = pref.getString("account","");
+            String username = pref.getString("account","");
             String password = pref.getString("password","");
-            edit_account.setText(account);
+            edit_account.setText(username);
             edit_password.setText(password);
             chk_remember_pass.setChecked(true);
         }
@@ -79,27 +80,67 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.btn_login:
-                String account = edit_account.getText().toString();
-                String password = edit_password.getText().toString();
-                if ("admin".equals(account) && "123456".equals(password)){
-                    editor = pref.edit();
-                    if (chk_remember_pass.isChecked()){
-                        editor.putBoolean("remember_password",true);
-                        editor.putString("account",account);
-                        editor.putString("password",password);
-                    }else {
-                        editor.clear();
+                final String username = edit_account.getText().toString();
+                final String password = edit_password.getText().toString();
+//////////////////////////////////////////////////////////////////////////////////////////
+                String address = "http://47.93.252.249/login.php";
+                HttpUtil.sendHttpWithOkhttp_POST(address, username, password, new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        e.printStackTrace();
                     }
-                    editor.apply();
-                    //convert activity
-                    Toast.makeText(LoginActivity.this,"successed",Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-                    startActivity(intent);
 
-                }else{
-                    Toast.makeText(LoginActivity.this,"Login failed",Toast.LENGTH_SHORT).show();
-                }
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        String responseData = response.body().string();
+                        final boolean result = ParseJSON.parseJSONWithJSONObject(responseData);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (result){
+                                    editor = pref.edit();
+                                    if (chk_remember_pass.isChecked()){
+                                        editor.putBoolean("remember_password",true);
+                                        editor.putString("account",username);
+                                        editor.putString("password",password);
+                                    }else {
+                                        editor.clear();
+                                    }
+                                    editor.apply();
+                                    //convert activity
+                                    Toast.makeText(LoginActivity.this,"successed",Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                                    startActivity(intent);
+                                }else{
+                                    Toast.makeText(LoginActivity.this,"Login failed",Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }
+                });
                 break;
+//////////////////////////////////////////////////////////////////////////////////////////
+//
+//                if ("admin".equals(username) && "123456".equals(password)){
+//                    editor = pref.edit();
+//                    if (chk_remember_pass.isChecked()){
+//                        editor.putBoolean("remember_password",true);
+//                        editor.putString("account",username);
+//                        editor.putString("password",password);
+//                    }else {
+//                        editor.clear();
+//                    }
+//                    editor.apply();
+//                    //convert activity
+//                    Toast.makeText(LoginActivity.this,"successed",Toast.LENGTH_SHORT).show();
+//                    Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+//                    startActivity(intent);
+//
+//                }else{
+//                    Toast.makeText(LoginActivity.this,"Login failed",Toast.LENGTH_SHORT).show();
+//                }
+//                break;
+/////////////////////////////////////////////////////////////////////////////////////////////
             case R.id.btn_cancle:
                 finish();
         }
