@@ -52,18 +52,36 @@ public class MainActivity extends AppCompatActivity {
         final RecyclerView recyclerView = findViewById(R.id.recycler_view);
         GridLayoutManager layoutManager = new GridLayoutManager(this,2);
         recyclerView.setLayoutManager(layoutManager);
-        address = "http://47.93.252.249/data.php";
+        address = "http://47.93.252.249/data.php?search=%E6%97%A9%E9%A4%90&&page=1";
 
         naView.setCheckedItem(R.id.item1);
         naView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()){
-                    case R.id.item1:
+                    case R.id.item1:address = "http://47.93.252.249/data.php?search=%E6%97%A9%E9%A4%90&&page=1";
+                        HttpUtil.sendHttpWithOkhttp(address, new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                e.printStackTrace();
+                            }
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                String responseData = response.body().string();
+                                foodList = ParseJSON.parseJSONWithGson(responseData);
+                                adapter = new FoodAdapter(foodList);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        recyclerView.setAdapter(adapter);
+                                    }
+                                });
+                            }
+                        });
                         Toast.makeText(MainActivity.this,"item1",Toast.LENGTH_SHORT).show();
                         break;
                     case R.id.item2:
-                        address = "http://47.93.252.249/data.php?search=%E6%97%A9%E9%A4%90&&page=1";
+                        address = "http://47.93.252.249/data.php";
                         HttpUtil.sendHttpWithOkhttp(address, new Callback() {
                             @Override
                             public void onFailure(Call call, IOException e) {
